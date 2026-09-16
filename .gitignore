@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Django
+staticfiles/
+media/
+db.sqlite3
+
+# Entorno
+.env
+
+# Sistema
+.DS_Store
+*.log
+.ruff_cache/
+
+# IDE
+.idea/
+.vscode/
+
+# Entregables de auditoría (no forman parte del código)
+docs/

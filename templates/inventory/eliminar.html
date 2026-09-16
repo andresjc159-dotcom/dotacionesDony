@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Eliminar — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Eliminar producto</h1>
+    <p style="color:var(--text-mid); margin:0;">Esta acción no se puede deshacer.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:520px; border-color:rgba(251,113,133,0.4);">
+  <p>¿Seguro que deseas eliminar <strong>{{ producto.nombre }}</strong> ({{ producto.sku }})?</p>
+  <p style="color:var(--text-mid); font-size:0.9rem;">También se eliminarán sus variantes asociadas.</p>
+  <form method="post" style="display:flex; gap:0.75rem; margin-top:1rem;">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg,#f43f5e,#fb7185);">Sí, eliminar</button>
+    <a class="btn btn-ghost" href="{% url 'inventory:productos' %}">Cancelar</a>
+  </form>
+</div>
+{% endblock %}

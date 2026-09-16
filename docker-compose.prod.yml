@@ -1,0 +1,42 @@
+# Docker Compose para producción.
+# Uso: cp .env.production.example .env.production && docker compose -f docker-compose.prod.yml up -d --build
+# La base de datos es externa (AWS RDS); solo se ejecutan web, worker y redis.
+
+services:
+  redis:
+    image: redis:7
+    restart: always
+    command: redis-server --appendonly yes
+
+  web:
+    build: .
+    restart: always
+    command: >
+      sh -c "python manage.py migrate --settings=config.settings.prod &&
+             python manage.py collectstatic --noinput --settings=config.settings.prod &&
+             gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120"
+    env_file: .env.production
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+    volumes:
+      - media_data:/app/media
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+
+  worker:
+    build: .
+    restart: always
+    command: celery -A config worker -l info
+    env_file: .env.production
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings.prod
+    volumes:
+      - media_data:/app/media
+    depends_on:
+      - web
+      - redis
+
+volumes:
+  media_data:

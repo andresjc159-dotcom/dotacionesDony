@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Iniciar sesión — Dotaciones Dony{% endblock %}
+
+{% block public %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="brand-mark" style="margin:0 auto 0.75rem; width:56px; height:56px; border-radius:16px; font-size:1.4rem;">D</div>
+      <h2>Dotaciones <span class="text-grad">Dony</span></h2>
+      <p style="color:var(--text-mid); margin:0;">Inicia sesión para continuar</p>
+    </div>
+
+    <div class="card">
+      {% if form.errors %}
+        <ul class="errorlist">
+          <li>Usuario o contraseña incorrectos.</li>
+        </ul>
+      {% endif %}
+
+      <form method="post" action="{% url 'users:login' %}">
+        {% csrf_token %}
+        <div class="field">
+          <label class="label" for="id_username">Usuario</label>
+          <input class="input" type="text" name="username" id="id_username" autofocus autocomplete="username" required>
+        </div>
+        <div class="field">
+          <label class="label" for="id_password">Contraseña</label>
+          <input class="input" type="password" name="password" id="id_password" autocomplete="current-password" required>
+        </div>
+        <input type="hidden" name="next" value="{{ next }}">
+        <button class="btn btn-primary btn-block" type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

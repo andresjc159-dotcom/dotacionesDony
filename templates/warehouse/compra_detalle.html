@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}{{ compra.numero }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">{{ compra.numero }}</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      {{ compra.proveedor.nombre }} · {{ compra.sede.nombre }} · {{ compra.fecha|date:"d/m/Y" }}
+    </p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:compras' %}">← Volver</a>
+</div>
+
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Producto</th><th>Variante</th><th>Cantidad</th><th>Costo unit.</th><th>Subtotal</th></tr></thead>
+    <tbody>
+      {% for d in compra.detalles.all %}
+      <tr>
+        <td><strong>{{ d.producto.nombre }}</strong></td>
+        <td>{{ d.variante.descripcion_valores|default:"—" }}</td>
+        <td>{{ d.cantidad }}</td>
+        <td>$ {{ d.costo_unitario }}</td>
+        <td>$ {{ d.subtotal }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="text-align:right; margin-top:1rem; font-size:1.2rem; font-family:var(--font-display);">
+    Total: <span class="text-grad">$ {{ compra.total }}</span>
+  </div>
+</div>
+{% endblock %}

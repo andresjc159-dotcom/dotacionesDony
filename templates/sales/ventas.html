@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Ventas — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Ventas</h1>
+    <p style="color:var(--text-mid); margin:0;">Registro de ventas y control de ingresos.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'pos:caja' %}">+ Nueva venta (caja)</a>
+</div>
+
+<div class="grid grid-2" style="margin-bottom:1.25rem;">
+  <div class="card stat">
+    <div class="stat-label">Total facturado (pagadas)</div>
+    <div class="stat-value text-grad">$ {{ total_pagadas|floatformat:0 }}</div>
+  </div>
+  <div class="card stat">
+    <div class="stat-label">Ventas registradas</div>
+    <div class="stat-value" style="color:var(--cyan);">{{ ventas|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <form method="get" style="display:flex; gap:0.75rem; align-items:center; margin-bottom:1rem;">
+    <input class="input" type="text" name="q" value="{{ q }}" placeholder="Buscar por número o cliente..." style="max-width:320px;">
+    <button class="btn btn-primary btn-sm" type="submit">Buscar</button>
+    {% if q %}<a class="btn btn-ghost btn-sm" href="{% url 'sales:ventas' %}">Limpiar</a>{% endif %}
+  </form>
+
+  {% if ventas %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Número</th><th>Fecha</th><th>Cliente</th><th>Método</th><th>Total</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for v in ventas %}
+        <tr>
+          <td><a href="{% url 'sales:venta_detalle' v.pk %}"><strong>{{ v.numero }}</strong></a></td>
+          <td>{{ v.fecha|date:"d/m/Y H:i" }}</td>
+          <td>{{ v.cliente.nombre|default:"Consumidor final" }}</td>
+          <td>{{ v.get_metodo_pago_display }}</td>
+          <td>$ {{ v.total|floatformat:0 }}</td>
+          <td>
+            {% if v.estado == "PAGADA" %}<span class="badge badge-ok">Pagada</span>
+            {% elif v.estado == "CREDITO" %}<span class="badge badge-warn">Crédito</span>
+            {% else %}<span class="badge badge-danger">Anulada</span>{% endif %}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'sales:venta_detalle' v.pk %}">Ver</a>
+            {% if v.estado != "ANULADA" %}<a class="btn btn-ghost btn-sm" href="{% url 'sales:venta_anular' v.pk %}" style="color:var(--danger);">Anular</a>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">▦</span><p>Aún no hay ventas registradas.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

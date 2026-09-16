@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">{{ titulo }}</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      {% if es_nuevo %}Registra un nuevo producto en el inventario.{% else %}Modifica la información del producto.{% endif %}
+    </p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'inventory:productos' %}">← Volver</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="card" style="border-color:rgba(251,113,133,0.4); margin-bottom:1.25rem;">
+      {% for e in form.non_field_errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <h3 style="margin-bottom:1rem;">Información básica</h3>
+    <div class="form-grid">
+      <div>{% include "includes/form_field.html" with field=form.nombre %}</div>
+      <div>{% include "includes/form_field.html" with field=form.sku %}</div>
+      <div>{% include "includes/form_field.html" with field=form.codigo_barras %}</div>
+      <div>{% include "includes/form_field.html" with field=form.categoria %}</div>
+      <div>{% include "includes/form_field.html" with field=form.impuesto %}</div>
+      <div>{% include "includes/form_field.html" with field=form.unidad %}</div>
+      <div class="full">{% include "includes/form_field.html" with field=form.descripcion %}</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:1rem;">Precio y stock</h3>
+    <div class="form-grid">
+      <div>{% include "includes/form_field.html" with field=form.precio %}</div>
+      <div>{% include "includes/form_field.html" with field=form.costo %}</div>
+      <div>{% include "includes/form_field.html" with field=form.stock_min %}</div>
+      <div>{% include "includes/form_field.html" with field=form.stock_max %}</div>
+    </div>
+    <p style="color:var(--text-mid); font-size:0.85rem; margin:0.5rem 0 0;">
+      El stock inicial se carga desde Bodega (compras o ajustes de entrada).
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:1rem;">Ubicación física</h3>
+    <p style="color:var(--text-mid); font-size:0.85rem; margin:0 0 0.75rem;">
+      Indica dónde se encuentra el producto en bodega para encontrarlo más rápido.
+    </p>
+    <div class="form-grid">
+      <div>{% include "includes/form_field.html" with field=form.estanteria %}</div>
+      <div>{% include "includes/form_field.html" with field=form.modulo %}</div>
+      <div>{% include "includes/form_field.html" with field=form.nivel %}</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:0.5rem;">Características especiales</h3>
+    <div class="field">
+      <label class="switch-wrap" for="{{ form.usa_variantes.id_for_label }}">
+        {{ form.usa_variantes }}
+        <span style="font-weight:600;">Este producto usa variantes (talla, color, tela)</span>
+      </label>
+      {% if form.usa_variantes.help_text %}<div class="help">{{ form.usa_variantes.help_text }}</div>{% endif %}
+      {% for e in form.usa_variantes.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </div>
+    <div class="field" id="atributos-wrap">
+      {% include "includes/form_field.html" with field=form.atributos %}
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:0.5rem;">Variantes</h3>
+    <p style="color:var(--text-mid); font-size:0.85rem; margin-top:0;">
+      Si el producto es genérico, deja esta sección vacía. Cada variante tiene su propio SKU y stock.
+    </p>
+
+    {{ formset.management_form }}
+    <div id="variantes-list">
+      {% for vf in formset %}
+        <div class="variant-card">
+          <div class="variant-head">
+            <span>Variante #{{ forloop.counter }}</span>
+            {% if vf.instance.pk %}<span class="badge">existente</span>{% endif %}
+          </div>
+          {% if vf.non_field_errors %}{% for e in vf.non_field_errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+          {% for hidden in vf.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="form-grid">
+            <div>{% include "includes/form_field.html" with field=vf.sku %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.codigo_barras %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.precio %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.costo %}</div>
+            <div class="field">
+              <label class="switch-wrap" for="{{ vf.activo.id_for_label }}">
+                {{ vf.activo }}
+                <span style="font-weight:600;">Activo</span>
+              </label>
+            </div>
+            <div class="full">{% include "includes/form_field.html" with field=vf.valores %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.estanteria %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.modulo %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.nivel %}</div>
+          </div>
+          {% if vf.DELETE %}
+          <div class="field" style="margin:0.5rem 0 0;">
+            <label class="switch-wrap" for="{{ vf.DELETE.id_for_label }}">
+              {{ vf.DELETE }}
+              <span style="color:var(--danger); font-weight:600;">Eliminar esta variante</span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" id="add-variant">+ Agregar variante</button>
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <div class="field">
+      <label class="switch-wrap" for="{{ form.activo.id_for_label }}">
+        {{ form.activo }}
+        <span style="font-weight:600;">Producto activo</span>
+      </label>
+    </div>
+    <div class="field">
+      {% include "includes/form_field.html" with field=form.imagen %}
+    </div>
+    <button class="btn btn-primary" type="submit">{% if es_nuevo %}Crear producto{% else %}Guardar cambios{% endif %}</button>
+  </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const usaVariantes = document.getElementById("{{ form.usa_variantes.id_for_label }}");
+  const atributosWrap = document.getElementById("atributos-wrap");
+
+  function toggleAtributos() {
+    atributosWrap.style.display = usaVariantes.checked ? "block" : "none";
+  }
+  if (usaVariantes) { usaVariantes.addEventListener("change", toggleAtributos); toggleAtributos(); }
+
+  const lista = document.getElementById("variantes-list");
+  const addBtn = document.getElementById("add-variant");
+  if (addBtn && lista) {
+    addBtn.addEventListener("click", function () {
+      const totalForms = document.getElementById("id_variantes-TOTAL_FORMS");
+      const idx = parseInt(totalForms.value, 10);
+      const plantilla = lista.querySelector(".variant-card");
+      if (!plantilla) return;
+      const clon = plantilla.cloneNode(true);
+      clon.innerHTML = clon.innerHTML.replace(/variantes-\d+-/g, "variantes-" + idx + "-");
+      clon.querySelectorAll("input[type=checkbox], select").forEach(el => { el.checked = false; el.selectedIndex = -1; });
+      clon.querySelectorAll("input[type=text], input[type=number], textarea").forEach(el => el.value = "");
+      const head = clon.querySelector(".variant-head span");
+      if (head) head.textContent = "Variante #" + (idx + 1);
+      lista.appendChild(clon);
+      totalForms.value = idx + 1;
+    });
+  }
+</script>
+{% endblock %}

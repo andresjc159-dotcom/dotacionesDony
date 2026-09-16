@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Caja — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Caja</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      Turno abierto desde {{ turno.fecha_apertura|date:"d/m/Y H:i" }} ·
+      Base $ {{ turno.monto_inicial }} ·
+      Vendido <strong style="color:var(--cyan);">$ {{ turno.total_ventas }}</strong>
+    </p>
+  </div>
+  <form method="post" action="{% url 'pos:cerrar' %}">
+    {% csrf_token %}
+    <div style="display:flex; gap:0.5rem; align-items:center;">
+      <input class="input" type="number" step="0.01" name="monto_cierre" placeholder="Monto final $" required style="max-width:160px;">
+      <button class="btn btn-ghost btn-sm" type="submit">Cerrar caja</button>
+    </div>
+  </form>
+</div>
+
+<div style="display:grid; grid-template-columns: 1fr 380px; gap:1.25rem;">
+  <!-- Lista de productos -->
+  <div>
+    <div class="card" style="margin-bottom:1.25rem; padding:1rem;">
+      <form method="get" style="display:flex; gap:0.75rem; align-items:center;">
+        <input class="input" type="text" name="q" value="{{ request.GET.q }}" placeholder="Buscar producto..." style="max-width:320px;">
+        <button class="btn btn-primary btn-sm" type="submit">Buscar</button>
+      </form>
+    </div>
+
+    <div class="grid grid-2">
+      {% for p in productos %}
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <strong>{{ p.nombre }}</strong>
+            <div style="color:var(--text-mid); font-size:0.85rem;">{{ p.sku }} · Stock {{ p.stock_actual }}{% if p.ubicacion %} · {{ p.ubicacion }}{% endif %}</div>
+          </div>
+          <div class="text-grad" style="font-weight:700;">$ {{ p.precio }}</div>
+        </div>
+
+        <form method="post" action="{% url 'pos:agregar' %}" style="margin-top:0.75rem; display:flex; gap:0.5rem; align-items:center;">
+          {% csrf_token %}
+          <input type="hidden" name="producto_id" value="{{ p.pk }}">
+          <input type="hidden" name="cantidad" value="1">
+          {% if p.usa_variantes %}
+            <select class="input" name="variante_id" style="flex:1; font-size:0.85rem;">
+              {% for v in p.variantes.all %}
+                {% if v.activo %}
+                <option value="{{ v.pk }}">{{ v.descripcion_valores }} · {{ v.stock_actual }}{% if v.ubicacion_efectiva %} · {{ v.ubicacion_efectiva }}{% endif %}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          {% endif %}
+          <button class="btn btn-primary btn-sm" type="submit">+ Agregar</button>
+        </form>
+      </div>
+      {% empty %}
+      <div class="card" style="grid-column:1/-1;"><p style="color:var(--text-mid);">No hay productos activos.</p></div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Ticket / carrito -->
+  <div class="card" style="position:sticky; top:1.5rem; align-self:start;">
+    <h3>Venta actual</h3>
+    {% if carrito %}
+    <table class="table">
+      <thead><tr><th>Producto</th><th>Cant.</th><th>Total</th><th></th></tr></thead>
+      <tbody>
+        {% for l in carrito %}
+        <tr>
+          <td style="font-size:0.85rem;">{{ l.producto.nombre }}{% if l.variante %}<br><span style="color:var(--text-mid);">{{ l.variante.descripcion_valores }}</span>{% endif %}</td>
+          <td>{{ l.cantidad }}</td>
+          <td>$ {{ l.subtotal|floatformat:0 }}</td>
+          <td>
+            <form method="post" action="{% url 'pos:quitar' %}" style="margin:0;">
+              {% csrf_token %}
+              <input type="hidden" name="idx" value="{{ forloop.counter0 }}">
+              <button class="btn btn-ghost btn-sm" type="submit" style="color:var(--danger);">✕</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div style="border-top:1px solid var(--glass-border); padding-top:0.75rem; margin-top:0.5rem;">
+      <div style="display:flex; justify-content:space-between; color:var(--text-mid);">
+        <span>Subtotal</span><span>$ {{ totales.subtotal|floatformat:0 }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; color:var(--text-mid);">
+        <span>IVA incluido</span><span>$ {{ totales.impuestos|floatformat:0 }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; font-size:1.4rem; font-family:var(--font-display); font-weight:700; margin-top:0.5rem;">
+        <span>Total</span><span class="text-grad">$ {{ totales.total|floatformat:0 }}</span>
+      </div>
+    </div>
+
+    <form method="post" action="{% url 'pos:cobrar' %}" style="margin-top:1rem;">
+      {% csrf_token %}
+      <div class="field">
+        <label class="label">Cliente</label>
+        {{ cobrar_form.cliente }}
+      </div>
+      <div class="field">
+        <label class="label">Método de pago</label>
+        {{ cobrar_form.metodo_pago }}
+      </div>
+      <div class="field">
+        <label class="label">Monto recibido (efectivo)</label>
+        {{ cobrar_form.monto_recibido }}
+      </div>
+      <button class="btn btn-primary btn-block" type="submit">Cobrar $ {{ totales.total|floatformat:0 }}</button>
+    </form>
+    {% else %}
+    <p style="color:var(--text-mid);">El carrito está vacío. Agrega productos desde la izquierda.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

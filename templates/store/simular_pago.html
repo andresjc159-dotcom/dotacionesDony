@@ -1,0 +1,22 @@
+{% extends "store/base.html" %}
+
+{% block title %}Pago simulado — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:480px; margin:0 auto; text-align:center;">
+  <h1 style="font-size:1.6rem;">Pago simulado (desarrollo)</h1>
+  <p style="color:var(--text-mid);">
+    No hay claves de Wompi configuradas, así que este paso simula la pasarela de pagos.
+    En producción se redirigiría al checkout de Wompi.
+  </p>
+  <div style="font-size:2rem; font-family:var(--font-display); font-weight:700; margin:1rem 0;">
+    Total: <span class="text-grad">$ {{ orden.total|floatformat:0 }}</span>
+  </div>
+  <p style="color:var(--text-mid); font-size:0.9rem;">Pedido {{ orden.numero }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn btn-primary btn-block" type="submit">Aprobar pago (simulado)</button>
+  </form>
+  <a class="btn btn-ghost btn-sm" href="{% url 'store:orden' orden.pk %}" style="margin-top:0.75rem;">Ver pedido</a>
+</div>
+{% endblock %}

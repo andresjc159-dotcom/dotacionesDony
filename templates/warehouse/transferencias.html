@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Transferencias — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Transferencias</h1>
+    <p style="color:var(--text-mid); margin:0;">Movimientos de inventario entre sedes.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'warehouse:transferencia_nueva' %}">+ Nueva transferencia</a>
+</div>
+
+<div class="card">
+  {% if transferencias %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Producto</th><th>Variante</th><th>Cant.</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Fecha</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for t in transferencias %}
+        <tr>
+          <td><strong>{{ t.producto.nombre }}</strong></td>
+          <td>{{ t.variante.descripcion_valores|default:"—" }}</td>
+          <td>{{ t.cantidad }}</td>
+          <td>{{ t.origen.nombre }}</td>
+          <td>{{ t.destino.nombre }}</td>
+          <td>{% if t.estado == "COMPLETADA" %}<span class="badge badge-ok">Completada</span>{% else %}<span class="badge badge-warn">Pendiente</span>{% endif %}</td>
+          <td>{{ t.fecha|date:"d/m/Y" }}</td>
+          <td style="text-align:right;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:transferencia_eliminar' t.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">⇆</span><p>Aún no hay transferencias registradas.</p>
+    <a class="btn btn-primary" href="{% url 'warehouse:transferencia_nueva' %}">+ Crear la primera</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

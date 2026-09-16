@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Predicción — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Predicción y mín/máx</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      Basado en las ventas de los últimos {{ dias_historia }} días · reposición {{ dias_reposicion }} días · revisión cada {{ dias_revision }} días.
+    </p>
+  </div>
+  <form method="post" action="{% url 'reports:aplicar_minmax' %}">
+    {% csrf_token %}
+    <button class="btn btn-primary btn-sm" type="submit">Aplicar sugerencias a todos</button>
+  </form>
+</div>
+
+<div class="card">
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Stock actual</th>
+          <th>Demanda diaria</th>
+          <th>Venta esperada (30d)</th>
+          <th>Mín. actual</th>
+          <th>Mín. sugerido</th>
+          <th>Máx. actual</th>
+          <th>Máx. sugerido</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sugerencias %}
+        <tr>
+          <td><strong>{{ s.producto.nombre }}</strong></td>
+          <td>{{ s.stock_actual }}</td>
+          <td>{{ s.demanda_diaria }}</td>
+          <td>{{ s.venta_esperada_30dias }}</td>
+          <td>{{ s.min_actual }}</td>
+          <td>
+            {% if s.min_sug != s.min_actual %}
+            <span class="badge badge-warn">{{ s.min_sug }}</span>
+            {% else %}{{ s.min_sug }}{% endif %}
+          </td>
+          <td>{{ s.max_actual }}</td>
+          <td>
+            {% if s.max_sug != s.max_actual %}
+            <span class="badge badge-warn">{{ s.max_sug }}</span>
+            {% else %}{{ s.max_sug }}{% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="8" style="color:var(--text-mid);">No hay productos activos para predecir.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p style="color:var(--text-low); font-size:0.8rem; margin-top:0.75rem;">
+    Método: la demanda diaria se calcula como el promedio de unidades vendidas en los últimos {{ dias_historia }} días.
+    Mínimo sugerido = demanda × {{ dias_reposicion }} días de reposición. Máximo sugerido = demanda × {{ dias_revision }} días de revisión.
+    Los productos sin historial de ventas reciben mín/máx = 0.
+  </p>
+</div>
+{% endblock %}

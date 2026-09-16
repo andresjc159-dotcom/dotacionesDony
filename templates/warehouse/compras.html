@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Compras — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Compras</h1>
+    <p style="color:var(--text-mid); margin:0;">Entradas de mercancía a bodega.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'warehouse:compra_nueva' %}">+ Nueva compra</a>
+</div>
+
+<div class="card">
+  {% if compras %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Número</th><th>Proveedor</th><th>Sede</th><th>Fecha</th><th>Total</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for c in compras %}
+        <tr>
+          <td><a href="{% url 'warehouse:compra_detalle' c.pk %}"><strong>{{ c.numero }}</strong></a></td>
+          <td>{{ c.proveedor.nombre }}</td>
+          <td>{{ c.sede.nombre }}</td>
+          <td>{{ c.fecha|date:"d/m/Y" }}</td>
+          <td>$ {{ c.total }}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:compra_detalle' c.pk %}">Ver</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:compra_eliminar' c.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">▥</span><p>Aún no hay compras registradas.</p>
+    <a class="btn btn-primary" href="{% url 'warehouse:compra_nueva' %}">+ Registrar la primera compra</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

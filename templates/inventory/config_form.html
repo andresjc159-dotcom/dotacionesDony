@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">{{ titulo }}</h1>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url cancelar %}">← Volver</a>
+</div>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="card" style="border-color:rgba(251,113,133,0.4); margin-bottom:1.25rem;">
+      {% for e in form.non_field_errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+    </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="form-grid">
+      {% for field in form.visible_fields %}
+        {% if field.field.widget.input_type == "checkbox" %}
+          <div class="field">
+            <label class="switch-wrap" for="{{ field.id_for_label }}">
+              {{ field }}
+              <span style="font-weight:600;">{{ field.label }}</span>
+            </label>
+            {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
+            {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+          </div>
+        {% else %}
+          <div class="{% if field.field.widget.attrs.rows %}full{% endif %}">
+            {% include "includes/form_field.html" with field=field %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if con_valores %}
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:0.5rem;">Valores</h3>
+    <p style="color:var(--text-mid); font-size:0.85rem; margin-top:0;">Lista de valores posibles para este atributo (ej: S, M, L / Azul / Algodón).</p>
+    {{ formset.management_form }}
+    <div id="valores-list">
+      {% for vf in formset %}
+        <div class="variant-card">
+          <div class="variant-head"><span>Valor #{{ forloop.counter }}</span></div>
+          {% for hidden in vf.hidden_fields %}{{ hidden }}{% endfor %}
+          <div class="form-grid">
+            <div>{% include "includes/form_field.html" with field=vf.valor %}</div>
+            <div>{% include "includes/form_field.html" with field=vf.orden %}</div>
+          </div>
+          {% if vf.DELETE %}
+          <div class="field" style="margin:0.5rem 0 0;">
+            <label class="switch-wrap" for="{{ vf.DELETE.id_for_label }}">
+              {{ vf.DELETE }}
+              <span style="color:var(--danger); font-weight:600;">Eliminar</span>
+            </label>
+          </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" id="add-valor">+ Agregar valor</button>
+  </div>
+  {% endif %}
+
+  <button class="btn btn-primary" type="submit" style="margin-top:1.25rem;">Guardar</button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+{% if con_valores %}
+<script>
+  const lista = document.getElementById("valores-list");
+  const addBtn = document.getElementById("add-valor");
+  if (addBtn && lista) {
+    addBtn.addEventListener("click", function () {
+      const totalForms = document.getElementById("id_valores-TOTAL_FORMS");
+      const idx = parseInt(totalForms.value, 10);
+      const plantilla = lista.querySelector(".variant-card");
+      if (!plantilla) return;
+      const clon = plantilla.cloneNode(true);
+      clon.innerHTML = clon.innerHTML.replace(/valores-\d+-/g, "valores-" + idx + "-");
+      clon.querySelectorAll("input").forEach(el => { if (el.type === "checkbox") el.checked = false; else el.value = ""; });
+      const head = clon.querySelector(".variant-head span");
+      if (head) head.textContent = "Valor #" + (idx + 1);
+      lista.appendChild(clon);
+      totalForms.value = idx + 1;
+    });
+  }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Inventario</h1>
+    <p style="color:var(--text-mid); margin:0;">Catálogo de productos y variantes.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'inventory:producto_nuevo' %}">+ Nuevo producto</a>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem;">
+  <form method="get" style="display:flex; gap:0.75rem; align-items:center;">
+    <input class="input" type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre o SKU..." style="max-width:320px;">
+    <button class="btn btn-primary btn-sm" type="submit">Buscar</button>
+    {% if q %}<a class="btn btn-ghost btn-sm" href="{% url 'inventory:productos' %}">Limpiar</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  {% if productos %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>SKU</th>
+          <th>Producto</th>
+          <th>Categoría</th>
+          <th>Variantes</th>
+          <th>Ubicación</th>
+          <th>Precio</th>
+          <th>Stock</th>
+          <th>Estado</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr>
+          <td style="color:var(--text-mid);">{{ p.sku }}</td>
+          <td><strong>{{ p.nombre }}</strong></td>
+          <td>{{ p.categoria.nombre|default:"—" }}</td>
+          <td>
+            {% if p.usa_variantes %}
+              <span class="badge badge-info">{{ p.variantes.count }} variantes</span>
+            {% else %}
+              <span class="badge">genérico</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.ubicacion %}
+              <span class="badge badge-info">{{ p.ubicacion }}</span>
+            {% elif p.usa_variantes %}
+              <span class="badge">ver variantes</span>
+            {% else %}
+              <span style="color:var(--text-low);">—</span>
+            {% endif %}
+          </td>
+          <td>$ {{ p.precio }}</td>
+          <td>{{ p.stock_actual }}</td>
+          <td>
+            {% if p.stock_actual == 0 %}
+              <span class="badge badge-danger">Agotado</span>
+            {% elif p.stock_actual <= p.stock_min %}
+              <span class="badge badge-warn">Bajo</span>
+            {% else %}
+              <span class="badge badge-ok">OK</span>
+            {% endif %}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:producto_editar' p.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:producto_eliminar' p.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <span class="ico">▤</span>
+    <p>{% if q %}No se encontraron productos para «{{ q }}».{% else %}Aún no hay productos registrados.{% endif %}</p>
+    <a class="btn btn-primary" href="{% url 'inventory:producto_nuevo' %}">+ Crear el primer producto</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

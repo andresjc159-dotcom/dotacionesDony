@@ -1,0 +1,47 @@
+{% extends "store/base.html" %}
+
+{% block title %}{{ producto.nombre }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<a class="btn btn-ghost btn-sm" href="{% url 'store:catalogo' %}" style="margin-bottom:1.25rem;">← Volver al catálogo</a>
+
+<div style="display:grid; grid-template-columns: 1fr 1fr; gap:2rem;">
+  <div class="card" style="min-height:320px; display:grid; place-items:center;">
+    <div class="brand-mark" style="width:100%; height:100%; font-size:4rem; background:linear-gradient(135deg,#7c3aed22,#06b6d422); border:1px solid var(--glass-border); color:var(--text-low);">D</div>
+  </div>
+
+  <div>
+    <span class="badge badge-info">{{ producto.categoria.nombre|default:"General" }}</span>
+    <h1 style="font-size:2rem; margin-top:0.5rem;">{{ producto.nombre }}</h1>
+    <p style="color:var(--text-mid);">{{ producto.descripcion }}</p>
+    <div class="text-grad" style="font-size:2rem; font-weight:700; margin:0.75rem 0;">$ {{ producto.precio|floatformat:0 }}</div>
+
+    <form method="post" action="{% url 'store:carrito_agregar' %}" style="margin-top:1.25rem;">
+      {% csrf_token %}
+      <input type="hidden" name="producto_id" value="{{ producto.pk }}">
+
+      {% if producto.usa_variantes %}
+      <div class="field">
+        <label class="label">Talla / Color / Tela</label>
+        <select class="input" name="variante_id">
+          {% for v in producto.variantes.all %}
+            {% if v.activo %}
+            <option value="{{ v.pk }}" {% if v.stock_actual == 0 %}disabled{% endif %}>
+              {{ v.descripcion_valores }} {% if v.stock_actual == 0 %}(agotado){% endif %}
+            </option>
+            {% endif %}
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+
+      <div class="field">
+        <label class="label">Cantidad</label>
+        <input class="input" type="number" name="cantidad" value="1" min="1" style="max-width:120px;">
+      </div>
+
+      <button class="btn btn-primary" type="submit">Agregar al carrito</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

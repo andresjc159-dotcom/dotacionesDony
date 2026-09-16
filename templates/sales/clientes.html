@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Clientes — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Clientes</h1>
+    <p style="color:var(--text-mid); margin:0;">Gestiona tus clientes para ventas y despachos.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'sales:cliente_nuevo' %}">+ Nuevo cliente</a>
+</div>
+
+<div class="card">
+  {% if clientes %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Nombre</th><th>Documento</th><th>Teléfono</th><th>Email</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for c in clientes %}
+        <tr>
+          <td><strong>{{ c.nombre }}</strong></td>
+          <td>{{ c.documento|default:"—" }}</td>
+          <td>{{ c.telefono|default:"—" }}</td>
+          <td>{{ c.email|default:"—" }}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'sales:cliente_editar' c.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'sales:cliente_eliminar' c.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">◉</span><p>Aún no hay clientes registrados.</p>
+    <a class="btn btn-primary" href="{% url 'sales:cliente_nuevo' %}">+ Crear el primero</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Panel — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Hola, {{ user.first_name|default:user.username }} 👋</h1>
+    <p style="color:var(--text-mid); margin:0;">Este es el estado de tu operación hoy.</p>
+  </div>
+  <span class="badge badge-ok">● En línea</span>
+</div>
+
+<div class="grid grid-4">
+  <div class="card card-hover stat">
+    <div class="stat-label">Productos activos</div>
+    <div class="stat-value text-grad">{{ total_productos }}</div>
+    <div class="stat-delta" style="color:var(--text-mid);">en catálogo</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Stock bajo</div>
+    <div class="stat-value" style="color:var(--warn);">{{ stock_bajo|length }}</div>
+    <div class="stat-delta" style="color:var(--text-mid);">por debajo del mínimo</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Categorías</div>
+    <div class="stat-value" style="color:var(--cyan);">{{ total_categorias }}</div>
+    <div class="stat-delta" style="color:var(--text-mid);">parametrizables</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Sedes</div>
+    <div class="stat-value" style="color:var(--pink);">{{ total_sedes }}</div>
+    <div class="stat-delta" style="color:var(--text-mid);">físicas y online</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:1.5rem;">
+  <div class="card">
+    <h3>Accesos rápidos</h3>
+    <div class="grid grid-2" style="margin-top:0.75rem;">
+      <a class="btn btn-primary btn-sm" href="{% url 'inventory:productos' %}">Ver inventario</a>
+      <a class="btn btn-ghost btn-sm" href="/admin/">Administración</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Alertas de stock</h3>
+    {% if stock_bajo %}
+      <table class="table">
+        <thead><tr><th>Producto</th><th>Stock</th><th>Mín.</th></tr></thead>
+        <tbody>
+          {% for p in stock_bajo|slice:":5" %}
+          <tr>
+            <td>{{ p.nombre }}</td>
+            <td><span class="badge badge-warn">{{ p.stock_actual }}</span></td>
+            <td>{{ p.stock_min }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p style="color:var(--text-mid);">Sin alertas. Todo bajo control ✦</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

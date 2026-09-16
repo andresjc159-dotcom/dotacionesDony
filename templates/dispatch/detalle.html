@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Despacho {{ despacho.orden.numero }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Despacho {{ despacho.orden.numero }}</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      {{ despacho.transportadora }} · Guía {{ despacho.numero_guia|default:"—" }} · {{ despacho.get_estado_display }}
+    </p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'dispatch:despachos' %}">← Volver</a>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Destino</h3>
+    <p style="color:var(--text-mid); margin:0;">{{ despacho.orden.cliente_nombre }}</p>
+    <p style="color:var(--text-mid); margin:0;">{{ despacho.direccion }}</p>
+    <p style="color:var(--text-mid); margin:0;">{{ despacho.ciudad }} · {{ despacho.orden.telefono }}</p>
+    {% if despacho.notas %}<p style="margin-top:0.5rem;">{{ despacho.notas }}</p>{% endif %}
+  </div>
+  <div class="card">
+    <h3>Productos</h3>
+    <table class="table">
+      <thead><tr><th>Producto</th><th style="text-align:right;">Cant.</th></tr></thead>
+      <tbody>
+        {% for d in despacho.orden.detalles.all %}
+        <tr>
+          <td>{{ d.producto.nombre }}{% if d.variante %}<br><span style="color:var(--text-mid); font-size:0.8rem;">{{ d.variante.descripcion_valores }}</span>{% endif %}</td>
+          <td style="text-align:right;">{{ d.cantidad }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div style="margin-top:1.25rem;">
+  <a class="btn btn-primary" href="{% url 'dispatch:despacho_editar' despacho.pk %}">Actualizar estado</a>
+</div>
+{% endblock %}

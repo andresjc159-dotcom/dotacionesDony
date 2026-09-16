@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block title %}Proveedores — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Proveedores</h1>
+    <p style="color:var(--text-mid); margin:0;">Gestiona tus proveedores de mercancía.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'warehouse:proveedor_nuevo' %}">+ Nuevo proveedor</a>
+</div>
+
+<div class="card">
+  {% if proveedores %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Nombre</th><th>Documento</th><th>Teléfono</th><th>Email</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for p in proveedores %}
+        <tr>
+          <td><strong>{{ p.nombre }}</strong></td>
+          <td>{{ p.documento|default:"—" }}</td>
+          <td>{{ p.telefono|default:"—" }}</td>
+          <td>{{ p.email|default:"—" }}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:proveedor_editar' p.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:proveedor_eliminar' p.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">◫</span><p>Aún no hay proveedores registrados.</p>
+    <a class="btn btn-primary" href="{% url 'warehouse:proveedor_nuevo' %}">+ Crear el primero</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

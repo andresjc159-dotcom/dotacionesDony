@@ -1,0 +1,45 @@
+{% extends "store/base.html" %}
+
+{% block title %}Carrito — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<h1 style="font-size:2rem;">Tu carrito</h1>
+
+{% if carrito %}
+<div class="card">
+  <table class="table">
+    <thead><tr><th>Producto</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+    <tbody>
+      {% for l in carrito %}
+      <tr>
+        <td>
+          <strong>{{ l.producto.nombre }}</strong>
+          {% if l.variante %}<br><span style="color:var(--text-mid); font-size:0.85rem;">{{ l.variante.descripcion_valores }}</span>{% endif %}
+        </td>
+        <td>{{ l.cantidad }}</td>
+        <td>$ {{ l.precio|floatformat:0 }}</td>
+        <td>$ {{ l.subtotal|floatformat:0 }}</td>
+        <td>
+          <form method="post" action="{% url 'store:carrito_quitar' %}" style="margin:0;">
+            {% csrf_token %}
+            <input type="hidden" name="idx" value="{{ forloop.counter0 }}">
+            <button class="btn btn-ghost btn-sm" type="submit" style="color:var(--danger);">Quitar</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="border-top:1px solid var(--glass-border); padding-top:1rem; margin-top:0.5rem; text-align:right;">
+    <div style="color:var(--text-mid);">Subtotal: $ {{ totales.subtotal|floatformat:0 }} · IVA incluido: $ {{ totales.impuestos|floatformat:0 }}</div>
+    <div style="font-size:1.6rem; font-family:var(--font-display); font-weight:700;">Total: <span class="text-grad">$ {{ totales.total|floatformat:0 }}</span></div>
+    <a class="btn btn-primary" href="{% url 'store:checkout' %}" style="margin-top:1rem;">Ir al pago →</a>
+  </div>
+</div>
+{% else %}
+<div class="empty-state"><span class="ico">▣</span><p>Tu carrito está vacío.</p>
+  <a class="btn btn-primary" href="{% url 'store:catalogo' %}">Ver catálogo</a>
+</div>
+{% endif %}
+{% endblock %}

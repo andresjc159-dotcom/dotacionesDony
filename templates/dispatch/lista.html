@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Despachos — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Despachos</h1>
+    <p style="color:var(--text-mid); margin:0;">Envía los pedidos de la tienda online.</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'dispatch:despacho_nuevo' %}">+ Nuevo despacho</a>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem; padding:1rem;">
+  <form method="get" style="display:flex; gap:0.75rem; align-items:center;">
+    <select class="input" name="estado" style="max-width:200px;">
+      <option value="">Todos los estados</option>
+      {% for value, label in estados %}
+      <option value="{{ value }}" {% if estado == value %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
+    {% if estado %}<a class="btn btn-ghost btn-sm" href="{% url 'dispatch:despachos' %}">Limpiar</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  {% if despachos %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Orden</th><th>Cliente</th><th>Transportadora</th><th>Guía</th><th>Ciudad</th><th>Estado</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for d in despachos %}
+        <tr>
+          <td><a href="{% url 'dispatch:despacho_detalle' d.pk %}"><strong>{{ d.orden.numero }}</strong></a></td>
+          <td>{{ d.orden.cliente_nombre }}</td>
+          <td>{{ d.transportadora }}</td>
+          <td>{{ d.numero_guia|default:"—" }}</td>
+          <td>{{ d.ciudad|default:"—" }}</td>
+          <td>
+            {% if d.estado == "PENDIENTE" %}<span class="badge badge-warn">Pendiente</span>
+            {% elif d.estado == "ENVIADO" %}<span class="badge badge-info">Enviado</span>
+            {% elif d.estado == "ENTREGADO" %}<span class="badge badge-ok">Entregado</span>
+            {% else %}<span class="badge badge-danger">Cancelado</span>{% endif %}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'dispatch:despacho_detalle' d.pk %}">Ver</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'dispatch:despacho_editar' d.pk %}">Editar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">➦</span><p>Aún no hay despachos.</p>
+    <a class="btn btn-primary" href="{% url 'dispatch:despacho_nuevo' %}">+ Crear el primero</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

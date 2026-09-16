@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Parámetros — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Parámetros</h1>
+    <p style="color:var(--text-mid); margin:0;">Configuración del catálogo: categorías, impuestos y atributos.</p>
+  </div>
+</div>
+
+<div class="grid grid-2">
+  <!-- Categorías -->
+  <div class="card">
+    <div class="section-title" style="margin-top:0;">Categorías
+      <a class="btn btn-primary btn-sm" style="margin-left:auto;" href="{% url 'inventory:categoria_nueva' %}">+ Nueva</a>
+    </div>
+    {% if categorias %}
+    <table class="table">
+      <thead><tr><th>Nombre</th><th>Padre</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for c in categorias %}
+        <tr>
+          <td><strong>{{ c.nombre }}</strong></td>
+          <td>{{ c.padre.nombre|default:"—" }}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:categoria_editar' c.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:categoria_eliminar' c.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-mid);">Sin categorías registradas.</p>
+    {% endif %}
+  </div>
+
+  <!-- Impuestos -->
+  <div class="card">
+    <div class="section-title" style="margin-top:0;">Impuestos
+      <a class="btn btn-primary btn-sm" style="margin-left:auto;" href="{% url 'inventory:impuesto_nuevo' %}">+ Nuevo</a>
+    </div>
+    {% if impuestos %}
+    <table class="table">
+      <thead><tr><th>Nombre</th><th>Tarifa</th><th>Defecto</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for i in impuestos %}
+        <tr>
+          <td><strong>{{ i.nombre }}</strong></td>
+          <td>{{ i.tarifa }}%</td>
+          <td>{% if i.es_por_defecto %}<span class="badge badge-ok">Sí</span>{% else %}<span class="badge">No</span>{% endif %}</td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:impuesto_editar' i.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:impuesto_eliminar' i.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-mid);">Sin impuestos registrados.</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Atributos -->
+<div class="card" style="margin-top:1.25rem;">
+  <div class="section-title" style="margin-top:0;">Atributos (características especiales)
+    <a class="btn btn-primary btn-sm" style="margin-left:auto;" href="{% url 'inventory:atributo_nuevo' %}">+ Nuevo</a>
+  </div>
+  {% if atributos %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Atributo</th><th>Valores</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for a in atributos %}
+        <tr>
+          <td><strong>{{ a.nombre }}</strong></td>
+          <td>
+            {% for v in a.valores.all %}
+              <span class="badge">{{ v.valor }}</span>
+            {% empty %}
+              <span style="color:var(--text-low);">sin valores</span>
+            {% endfor %}
+          </td>
+          <td style="text-align:right; white-space:nowrap;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:atributo_editar' a.pk %}">Editar</a>
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:atributo_eliminar' a.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p style="color:var(--text-mid);">Sin atributos registrados.</p>
+  {% endif %}
+</div>
+{% endblock %}

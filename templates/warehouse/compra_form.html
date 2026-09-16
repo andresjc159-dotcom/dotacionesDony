@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva compra — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Nueva compra</h1>
+    <p style="color:var(--text-mid); margin:0;">Registra mercancía que entra a bodega. El stock se actualiza automáticamente.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:compras' %}">← Volver</a>
+</div>
+
+<form method="post" novalidate>
+  {% csrf_token %}
+  <div class="card">
+    {% include "includes/generic_fields.html" with form=form %}
+  </div>
+
+  <div class="card" style="margin-top:1.25rem;">
+    <h3 style="margin-bottom:0.5rem;">Detalles</h3>
+    {{ formset.management_form }}
+    <div id="detalles-list">
+      {% for df in formset %}
+      <div class="variant-card">
+        <div class="variant-head"><span>Detalle #{{ forloop.counter }}</span></div>
+        {% for hidden in df.hidden_fields %}{{ hidden }}{% endfor %}
+        {% if df.non_field_errors %}{% for e in df.non_field_errors %}<div class="field-error">{{ e }}</div>{% endfor %}{% endif %}
+        <div class="form-grid">
+          <div>{% include "includes/form_field.html" with field=df.producto %}</div>
+          <div>{% include "includes/form_field.html" with field=df.variante %}</div>
+          <div>{% include "includes/form_field.html" with field=df.cantidad %}</div>
+          <div>{% include "includes/form_field.html" with field=df.costo_unitario %}</div>
+        </div>
+        {% if df.DELETE %}
+        <div class="field" style="margin:0.5rem 0 0;">
+          <label class="switch-wrap" for="{{ df.DELETE.id_for_label }}">
+            {{ df.DELETE }}
+            <span style="color:var(--danger); font-weight:600;">Eliminar</span>
+          </label>
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    <button type="button" class="btn btn-ghost btn-sm" id="add-detalle">+ Agregar detalle</button>
+  </div>
+
+  <button class="btn btn-primary" type="submit" style="margin-top:1.25rem;">Registrar compra</button>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const lista = document.getElementById("detalles-list");
+  const addBtn = document.getElementById("add-detalle");
+  if (addBtn && lista) {
+    addBtn.addEventListener("click", function () {
+      const totalForms = document.getElementById("id_detalles-TOTAL_FORMS");
+      const idx = parseInt(totalForms.value, 10);
+      const plantilla = lista.querySelector(".variant-card");
+      if (!plantilla) return;
+      const clon = plantilla.cloneNode(true);
+      clon.innerHTML = clon.innerHTML.replace(/detalles-\d+-/g, "detalles-" + idx + "-");
+      clon.querySelectorAll("input, select").forEach(el => { if (el.type === "checkbox") el.checked = false; else el.value = ""; });
+      clon.querySelectorAll("select").forEach(el => el.selectedIndex = -1);
+      const head = clon.querySelector(".variant-head span");
+      if (head) head.textContent = "Detalle #" + (idx + 1);
+      lista.appendChild(clon);
+      totalForms.value = idx + 1;
+    });
+  }
+</script>
+{% endblock %}

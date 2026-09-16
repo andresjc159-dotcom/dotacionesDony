@@ -1,0 +1,18 @@
+<div class="form-grid">
+  {% for field in form.visible_fields %}
+    {% if field.field.widget.input_type == "checkbox" %}
+      <div class="field">
+        <label class="switch-wrap" for="{{ field.id_for_label }}">
+          {{ field }}
+          <span style="font-weight:600;">{{ field.label }}</span>
+        </label>
+        {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
+        {% for e in field.errors %}<div class="field-error">{{ e }}</div>{% endfor %}
+      </div>
+    {% else %}
+      <div class="{% if field.field.widget.attrs.rows %}full{% endif %}">
+        {% include "includes/form_field.html" with field=field %}
+      </div>
+    {% endif %}
+  {% endfor %}
+</div>

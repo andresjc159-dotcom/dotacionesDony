@@ -1,0 +1,96 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Dotaciones Dony{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="bg-aurora"></div>
+
+  {% if user.is_authenticated %}
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">D</div>
+        <div>Dotaciones <span class="text-grad">Dony</span></div>
+      </div>
+
+      <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'users:dashboard' %}">
+        <span class="ico">◈</span> Panel
+      </a>
+      <a class="nav-link {% if request.resolver_match.app_name == 'inventory' %}active{% endif %}" href="{% url 'inventory:productos' %}">
+        <span class="ico">▤</span> Inventario
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'parametros' %}active{% endif %}" href="{% url 'inventory:parametros' %}">
+        <span class="ico">⚙</span> Parámetros
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'ubicaciones' %}active{% endif %}" href="{% url 'inventory:ubicaciones' %}">
+        <span class="ico">⌖</span> Ubicaciones
+      </a>
+
+      <div class="nav-group">
+        <span class="nav-group-title">⇄ Bodega</span>
+        <a class="nav-link {% if request.resolver_match.url_name == 'compras' or request.resolver_match.url_name == 'compra_nueva' or request.resolver_match.url_name == 'compra_detalle' %}active{% endif %}" href="{% url 'warehouse:compras' %}">
+          <span class="ico">▥</span> Compras
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'ajustes' or request.resolver_match.url_name == 'ajuste_nuevo' %}active{% endif %}" href="{% url 'warehouse:ajustes' %}">
+          <span class="ico">↯</span> Ajustes
+        </a>
+        <a class="nav-link {% if request.resolver_match.url_name == 'transferencias' or request.resolver_match.url_name == 'transferencia_nueva' %}active{% endif %}" href="{% url 'warehouse:transferencias' %}">
+          <span class="ico">⇆</span> Transferencias
+        </a>
+        <a class="nav-link {% if request.resolver_match.app_name == 'warehouse' and 'proveedor' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'warehouse:proveedores' %}">
+          <span class="ico">◫</span> Proveedores
+        </a>
+      </div>
+
+      <a class="nav-link {% if request.resolver_match.app_name == 'pos' %}active{% endif %}" href="{% url 'pos:caja' %}">
+        <span class="ico">⛁</span> Caja
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'ventas' or request.resolver_match.url_name == 'venta_detalle' or request.resolver_match.url_name == 'venta_anular' %}active{% endif %}" href="{% url 'sales:ventas' %}">
+        <span class="ico">▦</span> Ventas
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'clientes' or request.resolver_match.url_name == 'cliente_nuevo' or request.resolver_match.url_name == 'cliente_editar' %}active{% endif %}" href="{% url 'sales:clientes' %}">
+        <span class="ico">◉</span> Clientes
+      </a>
+      <a class="nav-link {% if request.resolver_match.app_name == 'dispatch' %}active{% endif %}" href="{% url 'dispatch:despachos' %}">
+        <span class="ico">➦</span> Despachos
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'reporte' %}active{% endif %}" href="{% url 'reports:reporte' %}">
+        <span class="ico">▤</span> Reportes
+      </a>
+      <a class="nav-link {% if request.resolver_match.url_name == 'prediccion' %}active{% endif %}" href="{% url 'reports:prediccion' %}">
+        <span class="ico">⌁</span> Predicción
+      </a>
+      <a class="nav-link" href="{% url 'store:catalogo' %}">
+        <span class="ico">◌</span> Tienda online
+      </a>
+
+      <div class="sidebar-foot">
+        <div style="font-size:0.85rem; color:var(--text-mid); margin-bottom:0.5rem;">
+          <strong style="color:var(--text-hi);">{{ user.get_full_name|default:user.username }}</strong><br>
+          <span class="badge badge-info">{{ user.get_rol_display }}</span>
+          {% if user.sede %}<span class="badge">{{ user.sede.nombre }}</span>{% endif %}
+        </div>
+        <a class="btn btn-ghost btn-sm btn-block" href="{% url 'users:logout' %}">Cerrar sesión</a>
+      </div>
+    </aside>
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% else %}
+  {% block public %}{% endblock %}
+  {% endif %}
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Ubicaciones — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Ubicaciones</h1>
+    <p style="color:var(--text-mid); margin:0;">Encuentra cada producto en bodega: estantería, módulo y nivel.</p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'inventory:productos' %}">← Inventario</a>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem; padding:1rem;">
+  <form method="get" style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+    <input class="input" type="text" name="q" value="{{ q }}" placeholder="Buscar por nombre, SKU o ubicación..." style="max-width:340px;">
+    <label class="switch-wrap">
+      <input type="checkbox" name="faltantes" value="1" {% if solo_faltantes %}checked{% endif %} onchange="this.form.submit()">
+      <span style="font-weight:600;">Solo sin ubicación</span>
+    </label>
+    <button class="btn btn-primary btn-sm" type="submit">Buscar</button>
+    {% if q or solo_faltantes %}<a class="btn btn-ghost btn-sm" href="{% url 'inventory:ubicaciones' %}">Limpiar</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  {% if items %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr><th>SKU</th><th>Producto</th><th>Variante</th><th>Ubicación</th><th>Stock</th><th style="text-align:right;">Acciones</th></tr>
+      </thead>
+      <tbody>
+        {% for i in items %}
+        <tr>
+          <td style="color:var(--text-mid);">{{ i.sku }}</td>
+          <td><strong>{{ i.nombre }}</strong></td>
+          <td>{{ i.detalle|default:"—" }}</td>
+          <td>
+            {% if i.ubicacion %}
+              <span class="badge badge-info">{{ i.ubicacion }}</span>
+            {% else %}
+              <span class="badge badge-warn">Sin ubicación</span>
+            {% endif %}
+          </td>
+          <td>{{ i.stock }}</td>
+          <td style="text-align:right;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'inventory:producto_editar' i.producto_id %}">Ubicar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">⌖</span><p>No se encontraron productos con esos criterios.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

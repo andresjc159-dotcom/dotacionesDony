@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Reportes</h1>
+    <p style="color:var(--text-mid); margin:0;">Controla cuánto está ganando tu negocio.</p>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:1.25rem; padding:1rem;">
+  <form method="get" style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+    <div style="display:flex; align-items:center; gap:0.4rem;">
+      <label class="label" style="margin:0;">Desde</label>
+      <input class="input" type="date" name="desde" value="{{ desde }}" style="max-width:150px;">
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem;">
+      <label class="label" style="margin:0;">Hasta</label>
+      <input class="input" type="date" name="hasta" value="{{ hasta }}" style="max-width:150px;">
+    </div>
+    <div style="display:flex; align-items:center; gap:0.4rem;">
+      <label class="label" style="margin:0;">Sede</label>
+      <select class="input" name="sede" style="max-width:170px;">
+        <option value="">Todas</option>
+        {% for s in sedes %}
+        <option value="{{ s.pk }}" {% if sede and sede.pk == s.pk %}selected{% endif %}>{{ s.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit">Filtrar</button>
+  </form>
+</div>
+
+<div class="kpi-grid">
+  <div class="card card-hover stat">
+    <div class="stat-label">Ventas totales</div>
+    <div class="stat-value text-grad">$ {{ total_ventas|floatformat:0 }}</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Utilidad estimada</div>
+    <div class="stat-value" style="color:var(--ok);">$ {{ utilidad|floatformat:0 }}</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Ventas registradas</div>
+    <div class="stat-value" style="color:var(--cyan);">{{ numero_ventas }}</div>
+  </div>
+  <div class="card card-hover stat">
+    <div class="stat-label">Ticket promedio</div>
+    <div class="stat-value" style="color:var(--pink);">$ {{ ticket_promedio|floatformat:0 }}</div>
+  </div>
+</div>
+
+<div class="grid grid-2" style="margin-top:1.25rem;">
+  <div class="card">
+    <h3>Ventas por día</h3>
+    {% if ventas_por_dia %}
+    <div class="chart-v">
+      {% for v in ventas_por_dia %}
+      <div class="col" title="{{ v.dia }} · $ {{ v.total|floatformat:0 }}">
+        <span class="val">{{ v.total|floatformat:0 }}</span>
+        <div class="bar" style="height: {% widthratio v.total max_total 100 %}%;"></div>
+        <span class="lbl">{{ v.dia|date:"d/m" }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-mid);">Sin ventas en el rango seleccionado.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <h3>Productos más vendidos</h3>
+    {% if top_productos %}
+      {% for p in top_productos %}
+      <div class="hbar-row">
+        <span class="name">{{ p.producto__nombre }}</span>
+        <div class="hbar-track">
+          <div class="hbar-fill" style="width: {% widthratio p.cantidad top_productos.0.cantidad 100 %}%;"></div>
+        </div>
+        <span class="qty">{{ p.cantidad }} ud</span>
+      </div>
+      {% endfor %}
+    {% else %}
+    <p style="color:var(--text-mid);">Sin productos vendidos en el rango.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card" style="margin-top:1.25rem;">
+  <h3>Stock bajo</h3>
+  {% if stock_bajo %}
+  <table class="table">
+    <thead><tr><th>Producto</th><th>Stock</th><th>Mín.</th><th>Máx.</th><th>Estado</th></tr></thead>
+    <tbody>
+      {% for p in stock_bajo %}
+      <tr>
+        <td><strong>{{ p.nombre }}</strong></td>
+        <td>{{ p.stock_actual }}</td>
+        <td>{{ p.stock_min }}</td>
+        <td>{{ p.stock_max }}</td>
+        <td>
+          {% if p.stock_actual == 0 %}<span class="badge badge-danger">Agotado</span>
+          {% else %}<span class="badge badge-warn">Bajo</span>{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p style="color:var(--text-mid);">Todo el inventario está por encima del mínimo ✦</p>
+  {% endif %}
+</div>
+{% endblock %}

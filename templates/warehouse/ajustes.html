@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Ajustes — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">Ajustes de inventario</h1>
+    <p style="color:var(--text-mid); margin:0;">Entradas y salidas manuales (mermas, conteos, daños).</p>
+  </div>
+  <a class="btn btn-primary btn-sm" href="{% url 'warehouse:ajuste_nuevo' %}">+ Nuevo ajuste</a>
+</div>
+
+<div class="card">
+  {% if ajustes %}
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead><tr><th>Tipo</th><th>Producto</th><th>Variante</th><th>Cant.</th><th>Sede</th><th>Motivo</th><th>Fecha</th><th style="text-align:right;">Acciones</th></tr></thead>
+      <tbody>
+        {% for a in ajustes %}
+        <tr>
+          <td>
+            {% if a.tipo == "ENTRADA" %}<span class="badge badge-ok">Entrada</span>{% else %}<span class="badge badge-danger">Salida</span>{% endif %}
+          </td>
+          <td><strong>{{ a.producto.nombre }}</strong></td>
+          <td>{{ a.variante.descripcion_valores|default:"—" }}</td>
+          <td>{{ a.cantidad }}</td>
+          <td>{{ a.sede.nombre }}</td>
+          <td>{{ a.motivo|default:"—" }}</td>
+          <td>{{ a.fecha|date:"d/m/Y" }}</td>
+          <td style="text-align:right;">
+            <a class="btn btn-ghost btn-sm" href="{% url 'warehouse:ajuste_eliminar' a.pk %}" style="color:var(--danger);">Eliminar</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><span class="ico">↯</span><p>Aún no hay ajustes registrados.</p>
+    <a class="btn btn-primary" href="{% url 'warehouse:ajuste_nuevo' %}">+ Crear el primero</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

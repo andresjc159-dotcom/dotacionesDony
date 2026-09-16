@@ -1,0 +1,38 @@
+{% extends "store/base.html" %}
+
+{% block title %}{{ orden.numero }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:640px; margin:0 auto; text-align:center;">
+  <h1 style="font-size:1.8rem;">Pedido {{ orden.numero }}</h1>
+
+  {% if orden.estado == "PAGADA" %}
+    <div style="font-size:2.5rem; color:var(--ok);">✓</div>
+    <h2 class="text-grad">¡Gracias por tu compra!</h2>
+    <p style="color:var(--text-mid);">Tu pago fue aprobado. Te enviaremos el despacho pronto.</p>
+  {% elif orden.estado == "PENDIENTE" %}
+    <h2>Pago pendiente</h2>
+    <p style="color:var(--text-mid);">Estamos confirmando tu pago. Si ya pagaste, actualiza en unos segundos.</p>
+    <a class="btn btn-ghost" href="{% url 'store:orden' orden.pk %}">Actualizar estado</a>
+  {% else %}
+    <span class="badge badge-danger">{{ orden.get_estado_display }}</span>
+  {% endif %}
+
+  <table class="table" style="margin-top:1rem;">
+    <thead><tr><th style="text-align:left;">Producto</th><th style="text-align:right;">Cant.</th><th style="text-align:right;">Valor</th></tr></thead>
+    <tbody>
+      {% for d in orden.detalles.all %}
+      <tr>
+        <td style="text-align:left;">{{ d.producto.nombre }}{% if d.variante %}<br><span style="color:var(--text-mid); font-size:0.8rem;">{{ d.variante.descripcion_valores }}</span>{% endif %}</td>
+        <td style="text-align:right;">{{ d.cantidad }}</td>
+        <td style="text-align:right;">$ {{ d.subtotal|floatformat:0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div style="font-size:1.4rem; font-family:var(--font-display); font-weight:700; margin-top:0.75rem;">
+    Total: <span class="text-grad">$ {{ orden.total|floatformat:0 }}</span>
+  </div>
+  <a class="btn btn-ghost" href="{% url 'store:catalogo' %}" style="margin-top:1.25rem;">Seguir comprando</a>
+</div>
+{% endblock %}

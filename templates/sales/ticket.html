@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}{{ venta.numero }} — Dotaciones Dony{% endblock %}
+
+{% block content %}
+<div class="topbar">
+  <div>
+    <h1 style="font-size:1.9rem;">{{ venta.numero }}</h1>
+    <p style="color:var(--text-mid); margin:0;">
+      {{ venta.fecha|date:"d/m/Y H:i" }} · {{ venta.sede.nombre }} · {{ venta.cajero.get_full_name|default:venta.cajero.username }}
+    </p>
+  </div>
+  <a class="btn btn-ghost btn-sm" href="{% url 'sales:ventas' %}">← Ventas</a>
+</div>
+
+<div class="card" style="max-width:560px;">
+  <div style="text-align:center; margin-bottom:1rem;">
+    <div class="brand-mark" style="margin:0 auto 0.5rem;">D</div>
+    <h3>Dotaciones Dony</h3>
+    <div style="color:var(--text-mid); font-size:0.85rem;">{{ venta.sede.direccion }}</div>
+  </div>
+
+  <table class="table">
+    <thead><tr><th>Descripción</th><th style="text-align:right;">Cant.</th><th style="text-align:right;">Valor</th></tr></thead>
+    <tbody>
+      {% for d in venta.detalles.all %}
+      <tr>
+        <td>{{ d.producto.nombre }}{% if d.variante %}<br><span style="color:var(--text-mid); font-size:0.8rem;">{{ d.variante.descripcion_valores }}</span>{% endif %}</td>
+        <td style="text-align:right;">{{ d.cantidad }}</td>
+        <td style="text-align:right;">$ {{ d.subtotal|floatformat:0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div style="border-top:1px solid var(--glass-border); padding-top:0.75rem; margin-top:0.5rem;">
+    <div style="display:flex; justify-content:space-between; color:var(--text-mid);"><span>Subtotal</span><span>$ {{ venta.subtotal|floatformat:0 }}</span></div>
+    <div style="display:flex; justify-content:space-between; color:var(--text-mid);"><span>IVA incluido</span><span>$ {{ venta.total_impuestos|floatformat:0 }}</span></div>
+    <div style="display:flex; justify-content:space-between; font-size:1.5rem; font-family:var(--font-display); font-weight:700;"><span>Total</span><span class="text-grad">$ {{ venta.total|floatformat:0 }}</span></div>
+  </div>
+
+  <div style="margin-top:1rem; font-size:0.9rem;">
+    <span class="badge badge-info">{{ venta.get_metodo_pago_display }}</span>
+    {% if venta.monto_recibido %}<span class="badge">Recibido: $ {{ venta.monto_recibido|floatformat:0 }}</span>{% endif %}
+    {% if venta.cambio %}<span class="badge badge-ok">Cambio: $ {{ venta.cambio|floatformat:0 }}</span>{% endif %}
+    {% if venta.estado == "ANULADA" %}<span class="badge badge-danger">Anulada</span>{% endif %}
+  </div>
+
+  {% if venta.estado != "ANULADA" %}
+  <div style="margin-top:1rem; display:flex; gap:0.75rem; justify-content:space-between;">
+    <button class="btn btn-ghost btn-sm" onclick="window.print()">🖨 Imprimir</button>
+    <a class="btn btn-ghost btn-sm" href="{% url 'sales:venta_anular' venta.pk %}" style="color:var(--danger);">Anular venta</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
