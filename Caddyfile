@@ -1,8 +1,10 @@
-# Caddy: proxy inverso con HTTPS automático (certificado gratis vía Let's Encrypt)
-# Cambia tudominio.com por tu dominio real. Si aún no tienes dominio, quita
-# esta línea y usa la IP pública directamente en el puerto 8000.
+# Caddy — proxy inverso con HTTPS automático (certificado gratis vía Let's Encrypt).
+# Cambia la línea de abajo por TU dominio gratis:
+#   - DuckDNS:   tudominio.duckdns.org        (recomendado, elige un nombre)
+#   - sslip.io:  54.210.15.44.sslip.io        (instantáneo, sin registro)
+# Caddy obtiene y renueva el certificado HTTPS automáticamente.
 
-tudominio.com {
+tudominio.duckdns.org {
 	encode gzip zstd
-	reverse_proxy localhost:8000
+	reverse_proxy lb:80
 }
