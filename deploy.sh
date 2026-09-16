@@ -28,5 +28,5 @@ docker compose -f docker-compose.aws.yml exec -T web python manage.py seed_demo 
 echo ""
 echo "=============================================================="
 echo " Desplegado. Revisa: docker compose -f docker-compose.aws.yml logs -f"
-echo " URL: http://$(curl -s ifconfig.me):8000"
+echo " URL: http://$(curl -s ifconfig.me)   (balanceador Nginx en puerto 80)"
 echo "=============================================================="

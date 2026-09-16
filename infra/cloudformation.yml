@@ -53,10 +53,6 @@ Resources:
           FromPort: 443
           ToPort: 443
           CidrIp: 0.0.0.0/0
-        - IpProtocol: tcp
-          FromPort: 8000
-          ToPort: 8000
-          CidrIp: 0.0.0.0/0
 
   Instance:
     Type: AWS::EC2::Instance
@@ -104,5 +100,5 @@ Outputs:
     Description: IP pública de la instancia
     Value: !GetAtt Instance.PublicIp
   URL:
-    Description: URL de la aplicación
-    Value: !Sub http://${Instance.PublicIp}:8000
+    Description: URL de la aplicación (a través del balanceador Nginx)
+    Value: !Sub http://${Instance.PublicIp}
