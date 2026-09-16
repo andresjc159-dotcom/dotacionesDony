@@ -1,0 +1,8 @@
+# Caddy: proxy inverso con HTTPS automático (certificado gratis vía Let's Encrypt)
+# Cambia tudominio.com por tu dominio real. Si aún no tienes dominio, quita
+# esta línea y usa la IP pública directamente en el puerto 8000.
+
+tudominio.com {
+	encode gzip zstd
+	reverse_proxy localhost:8000
+}

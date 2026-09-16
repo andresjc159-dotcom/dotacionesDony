@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+  Dotaciones Dony — despliegue CERO COSTO en una sola instancia EC2 (free tier).
+  Incluye: Security Group + EC2 con Docker (web, worker, PostgreSQL y Redis en contenedores).
+
+Parameters:
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: Par de llaves (key pair) para conectarte por SSH.
+
+  SecretKey:
+    Type: String
+    NoEcho: true
+    Description: "Clave secreta de Django. Generar con: python3 -c 'import secrets; print(secrets.token_urlsafe(50))'"
+
+  DbPassword:
+    Type: String
+    NoEcho: true
+    Default: dony
+    Description: Contraseña de PostgreSQL (en contenedor).
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues: [t3.micro, t2.micro]
+    Description: Tipo de instancia (free tier).
+
+  AllowedSSHIP:
+    Type: String
+    Default: 0.0.0.0/0
+    Description: IP permitida para SSH en formato CIDR. Usa TU_IP/32 para mayor seguridad.
+
+  GitRepo:
+    Type: String
+    Default: https://github.com/andresjc159-dotcom/dotacionesDony.git
+    Description: URL del repositorio del proyecto (debe ser público).
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Seguridad para Dotaciones Dony (cero costo)
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref AllowedSSHIP
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          CidrIp: 0.0.0.0/0
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      ImageId: '{{resolve:ssm:/aws/service/canonical/ubuntu/server/22.04/stable/current/amd64/hvm/ebs-gp2/ami-id}}'
+      SecurityGroupIds:
+        - !Ref SecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: 20
+            VolumeType: gp3
+      Tags:
+        - Key: Name
+          Value: dotaciones-dony
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          exec > /var/log/user-data.log 2>&1
+          apt-get update -y
+          apt-get install -y git ca-certificates curl
+          curl -fsSL https://get.docker.com | sh
+          usermod -aG docker ubuntu
+          cd /home/ubuntu
+          git clone ${GitRepo} app || (cd app && git pull)
+          cd app
+          PUBLIC_IP=$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)
+          echo "DJANGO_SETTINGS_MODULE=config.settings.prod" > .env.production
+          echo "SECRET_KEY=${SecretKey}" >> .env.production
+          echo "DEBUG=False" >> .env.production
+          echo "ALLOWED_HOSTS=$PUBLIC_IP,localhost" >> .env.production
+          echo "SECURE_SSL_REDIRECT=False" >> .env.production
+          echo "SESSION_COOKIE_SECURE=False" >> .env.production
+          echo "CSRF_COOKIE_SECURE=False" >> .env.production
+          echo "POSTGRES_PASSWORD=${DbPassword}" >> .env.production
+          echo "DEFAULT_FROM_EMAIL=no-reply@dotacionesdony.co" >> .env.production
+          docker compose -f docker-compose.aws.yml up -d --build
+          docker compose -f docker-compose.aws.yml exec -T web python manage.py seed_demo || true
+
+Outputs:
+  PublicIP:
+    Description: IP pública de la instancia
+    Value: !GetAtt Instance.PublicIp
+  URL:
+    Description: URL de la aplicación
+    Value: !Sub http://${Instance.PublicIp}:8000
